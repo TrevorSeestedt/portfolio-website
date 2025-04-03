@@ -1,0 +1,131 @@
+.navbar {
+  display: flex;
+  justify-content: center;
+  background-color: transparent;
+  z-index: 1000;
+  height: 60px;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.nav-container {
+  width: 70%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-left {
+  flex: 1;
+}
+
+.nav-center {
+  flex: 3;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.navbar-brand a {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: #333;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: #666;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.nav-links li a:hover {
+  color: #333;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.nav-links li a.active {
+  color: #333;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-icon { 
+  width: 20px; 
+  height: 20px; 
+  display: block;
+  transition: all 0.3s ease;
+  opacity: 70%
+}
+
+.theme-icon:hover { 
+  opacity: 100%
+}
+
+.theme-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Dark mode styles */
+body.dark-mode {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+body.dark-mode .navbar-brand a {
+  color: #ffffff;
+}
+
+body.dark-mode .nav-links li a {
+  color: #cccccc;
+}
+
+body.dark-mode .nav-links li a:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .nav-links li a.active {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .theme-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .theme-icon {
+  filter: brightness(0) invert(1);
+} 

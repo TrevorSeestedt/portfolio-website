@@ -1,0 +1,66 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  padding-top: 2rem;
+}
+
+.welcome-container {
+  text-align: left;
+  width: 100%;
+  max-width: auto;
+}
+
+.welcome-text {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #333;
+  display: inline-block;
+  line-height: 1.2;
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.welcome-text::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background-color: #333;
+  animation: blink 1s step-end infinite;
+  display: inline-block;
+}
+
+.welcome-blurb {
+  font-size: 1.25rem;
+  color: #555;
+  line-height: 1.8;
+  text-align: left;
+  max-width: auto;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Dark mode styles */
+body.dark-mode .welcome-text {
+  color: #ffffff;
+}
+
+body.dark-mode .welcome-text::after {
+  background-color: #ffffff;
+}
+
+body.dark-mode .welcome-blurb { 
+  color: #e0e0e0;
+}
