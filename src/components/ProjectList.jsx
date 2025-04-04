@@ -29,14 +29,14 @@ const ProjectList = () => {
       title: 'ColdCall',
       languages: ['Django', 'Python', 'JavaScript', 'HTML/CSS'],
       description: 'University Capstone Project - web application designed for a university law professor to call on and manage students.',
-      repoUrl: '',
+      repoUrl: 'https://github.com/SCCapstone/llama',
     },
     {
       id: 2,
       title: 'Website v2.0',
       languages: ['React', 'Node.js', 'JavaScript', 'HTML/CSS'],
       description: 'The website you are currently on!',
-      repoUrl: '',
+      repoUrl: 'https://github.com/TrevorSeestedt/portfolio-website',
     },
     {
       id: 3,
