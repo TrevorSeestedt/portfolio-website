@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import './MusicLibrary.css'; // We'll create this CSS file next
+import '../css/MusicLibrary.css';
 import playButton from '../assets/play-buttton.png';
 import pauseButton from '../assets/pause.png';
 
