@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import ContentWrapper from '../components/ContentWrapper';
-import Skills from '../components/Skills';
-import ResumePreview from '../components/ResumePreview';
 import '../css/Home.css';
+
+// Lazy load heavy components
+const Skills = lazy(() => import('../components/Skills'));
+const ResumePreview = lazy(() => import('../components/ResumePreview'));
 
 const Home = () => {
   return (
@@ -22,12 +24,15 @@ const Home = () => {
             Hello, my name's Trevor. I'm a senior at the University of South Carolina studying Computer Science graduating in May 2025. I'm passionate about developing innovative software solutions and am pursuing opportunities in data analytics or software engineering.
           </div>
         </div>
-        <Skills />
-        <ResumePreview />
-        
+        <Suspense fallback={<div className="loading">Loading skills...</div>}>
+          <Skills />
+        </Suspense>
+        <Suspense fallback={<div className="loading">Loading resume preview...</div>}>
+          <ResumePreview />
+        </Suspense>
       </div>
     </ContentWrapper>
   );
 };
 
-export default Home;
+export default React.memo(Home);

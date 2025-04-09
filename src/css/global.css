@@ -101,3 +101,63 @@ a:hover {
 .mb-4 {
   margin-bottom: 2rem;
 }
+
+/* Loading states and indicators */
+.loading, .page-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.page-loading {
+  min-height: 50vh;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 10px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #3498db;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Optimize images with object-fit */
+img {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Add theme support */
+.app.light {
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --accent-color: #3498db;
+}
+
+.app.dark {
+  --bg-color: #121212;
+  --text-color: #f0f0f0;
+  --accent-color: #64b5f6;
+}
+
+/* For reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

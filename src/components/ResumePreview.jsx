@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import resumePdf from '../assets/SWE_TrevorSeestedt_Resume.pdf';
 import resumePreviewImg from '../assets/SWE_TrevorSeestedt_Resume.png';
 import '../css/ResumePreview.css';
@@ -8,7 +8,8 @@ const ResumePreview = () => {
   const publicResumeUrl = '/assets/SWE_TrevorSeestedt_Resume.pdf';
   const [imgLoaded, setImgLoaded] = useState(false);
 
-  const handleDownload = () => {
+  // Optimize handlers with useCallback
+  const handleDownload = useCallback(() => {
     // Create an anchor element and trigger download
     const link = document.createElement('a');
     link.href = resumePdf;
@@ -16,16 +17,16 @@ const ResumePreview = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }, []);
 
   // Open PDF in new tab
-  const handleView = () => {
+  const handleView = useCallback(() => {
     window.open(resumePdf, '_blank');
-  };
+  }, []);
 
-  const handleImageLoad = (e) => {
+  const handleImageLoad = useCallback(() => {
     setImgLoaded(true);
-  };
+  }, []);
 
   return (
     <div className="resume-section">
@@ -63,4 +64,4 @@ const ResumePreview = () => {
   );
 };
 
-export default ResumePreview; 
+export default memo(ResumePreview); 

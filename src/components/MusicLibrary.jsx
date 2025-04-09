@@ -1,9 +1,36 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import '../css/MusicLibrary.css';
 import playButton from '../assets/play-buttton.png';
 import pauseButton from '../assets/pause.png';
 
 const BACKEND_URL = 'http://localhost:5001'; // Your backend server URL
+
+// Memoize track item component to prevent unnecessary re-renders
+const TrackItem = memo(({ track, isPlaying, currentlyPlaying, onPlay }) => {
+  const isCurrentTrack = currentlyPlaying && currentlyPlaying.id === track.id;
+  
+  return (
+    <div 
+      className={`track-item ${isCurrentTrack ? 'current-track' : ''}`}
+      onClick={() => onPlay(track)}
+    >
+      <div className="track-image">
+        <img src={track.albumImageUrl} alt={track.albumName} />
+        <div className="play-overlay">
+          <img 
+            src={isCurrentTrack && isPlaying ? pauseButton : playButton} 
+            alt={isCurrentTrack && isPlaying ? "Pause" : "Play"} 
+            className="play-icon"
+          />
+        </div>
+      </div>
+      <div className="track-info">
+        <p className="track-name">{track.name}</p>
+        <p className="track-artist">{track.artist}</p>
+      </div>
+    </div>
+  );
+});
 
 function MusicLibrary() {
   const [recentTracks, setRecentTracks] = useState([]); // State for all recent tracks
@@ -215,10 +242,12 @@ function MusicLibrary() {
     fetchRecentTracks();
   }, [needsLogin]);
 
-  // Filter out the most recently played track from the recent tracks list for Recently Played section
-  const filteredRecentTracks = recentTracks.length > 1 
-    ? recentTracks.slice(1, 5) // Take tracks 2-5 (skip the most recent one)
-    : [];
+  // Memoize filtered tracks to prevent unnecessary calculations
+  const filteredRecentTracks = useMemo(() => {
+    return recentTracks.length > 1 
+      ? recentTracks.slice(1, 5) // Take tracks 2-5 (skip the most recent one)
+      : [];
+  }, [recentTracks]);
 
   // Function to extract dominant color from an image
   const extractDominantColor = useCallback((imageUrl) => {
@@ -300,7 +329,7 @@ function MusicLibrary() {
   }, [mostRecentTrack?.albumImageUrl, extractDominantColor]);
 
   // --- Audio Player Logic ---
-  const playTrack = (track) => {
+  const playTrack = useCallback((track) => {
     // Check if player is ready
     if (!playerReady || !deviceId) {
       setPlaybackError("Spotify player isn't ready yet. Please wait or refresh the page.");
@@ -361,9 +390,9 @@ function MusicLibrary() {
         window.open(track.spotifyUrl, '_blank');
       }
     });
-  };
+  }, [playerReady, deviceId, accessToken, playerInstance, isPlaying, currentlyPlaying]);
 
-  const togglePlayPause = () => {
+  const togglePlayPause = useCallback(() => {
     if (!playerInstance) return;
     
     playerInstance.togglePlay()
@@ -374,7 +403,7 @@ function MusicLibrary() {
         console.error("Error toggling playback:", error);
         setPlaybackError("Failed to control playback. Try again.");
       });
-  };
+  }, [currentlyPlaying, isPlaying, playerInstance]);
 
   // Handle audio ended event
   useEffect(() => {
@@ -490,21 +519,26 @@ function MusicLibrary() {
     };
   }, [handleWheel]); // Only depends on handleWheel callback
 
-  const handleLoginClick = () => {
+  const handleLoginClick = useCallback(() => {
     // Opens the backend login route in a new tab/window
     window.open(`${BACKEND_URL}/login`, '_blank');
     // Optionally, you could add logic here to poll the backend
     // or provide a button to manually refresh after login.
-  };
+  }, []);
 
   // --- Click Handler for Album Items ---
-  const handleAlbumClick = (index, event) => {
+  const handleAlbumClick = useCallback((index, event) => {
     if (index !== focusedIndex) {
         event.preventDefault(); // Prevent link navigation if not focused
         setFocusedIndex(index); // Rotate wheel to the clicked item
     }
     // If index === focusedIndex, do nothing and allow the default anchor tag behavior
-  };
+  }, [albums, focusedIndex]);
+
+  // Memoize the render of album wheel for better performance
+  const albumWheel = useMemo(() => {
+    // ... album wheel rendering logic ...
+  }, [albums, focusedIndex, loadingAlbums, handleAlbumClick]);
 
   return (
     <div className="music-library">

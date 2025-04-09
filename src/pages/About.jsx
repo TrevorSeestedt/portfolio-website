@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import ContentWrapper from '../components/ContentWrapper';
-import CareerTimeline from '../components/CareerTimeline';
-import Hobbies from '../components/Hobbies';
 import photo1 from '../assets/photo1.JPG';
 import photo2 from '../assets/photo2.JPG';
 import photo3 from '../assets/photo3.jpg';
 import photo4 from '../assets/photo4.jpg';
 import '../css/About.css';
-import MusicLibrary from '../components/MusicLibrary';
+
+// Lazy load heavy components
+const CareerTimeline = lazy(() => import('../components/CareerTimeline'));
+const Hobbies = lazy(() => import('../components/Hobbies'));
+const MusicLibrary = lazy(() => import('../components/MusicLibrary'));
 
 const About = () => {
   return (
@@ -32,9 +34,15 @@ const About = () => {
               <img src={photo4} alt="Trevor Seestedt" />
             </div>
           </div>
-          <CareerTimeline />
-          <Hobbies />
-          <MusicLibrary />
+          <Suspense fallback={<div className="loading">Loading career timeline...</div>}>
+            <CareerTimeline />
+          </Suspense>
+          <Suspense fallback={<div className="loading">Loading hobbies...</div>}>
+            <Hobbies />
+          </Suspense>
+          <Suspense fallback={<div className="loading">Loading music library...</div>}>
+            <MusicLibrary />
+          </Suspense>
         </div>
       </div>
     </ContentWrapper>

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import '../css/Skills.css';
 
 const Skills = () => {
   const [flippedCard, setFlippedCard] = useState(null);
   const [selectedTech, setSelectedTech] = useState(null);
 
-  const skills = [
+  // Memoize skills data to prevent re-creation on each render
+  const skills = useMemo(() => [
     {
       id: 'frontend',
       name: 'Frontend',
@@ -87,74 +88,80 @@ const Skills = () => {
         }
       ]
     }
-  ];
+  ], []);
 
-  const handleTechClick = (e, cardId, tech) => {
+  // Optimize event handlers with useCallback
+  const handleTechClick = useCallback((e, cardId, tech) => {
     e.stopPropagation();
     setSelectedTech(tech);
     setFlippedCard(cardId);
-  };
+  }, []);
 
-  const handleCardClick = (cardId) => {
+  const handleCardClick = useCallback((cardId) => {
     if (flippedCard === cardId) {
       setFlippedCard(null);
       setSelectedTech(null);
     }
-  };
+  }, [flippedCard]);
+
+  // Memoize the rendered skill cards 
+  const skillCards = useMemo(() => {
+    return skills.map((skill) => (
+      <div 
+        key={skill.id} 
+        className={`skill-card ${flippedCard === skill.id ? 'flipped' : ''}`}
+        onClick={() => handleCardClick(skill.id)}
+        style={{ cursor: flippedCard === skill.id ? 'pointer' : 'default' }}
+      >
+        <div className="skill-card-front">
+          <div className="skill-header">
+            <h3>{skill.name}</h3>
+            <p className="skill-description">{skill.description}</p>
+          </div>
+          <div className="tech-stack">
+            {skill.technologies.map((tech, index) => (
+              <div 
+                key={index} 
+                className="tech-tag-container"
+                onClick={(e) => handleTechClick(e, skill.id, tech)}
+                style={{ cursor: 'pointer' }}
+              >
+                <span 
+                  className="tech-tag"
+                  style={{ backgroundColor: tech.color }}
+                >
+                  {tech.name}
+                </span>
+                <div className="tech-tooltip">
+                  <span className="tech-year">Learned in {tech.year}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="skill-card-back">
+          {selectedTech && flippedCard === skill.id && (
+            <>
+              <h4>{selectedTech.name}</h4>
+              <p>{selectedTech.description}</p>
+              <div className="back-to-front">
+                Tap to flip back
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    ));
+  }, [skills, flippedCard, selectedTech, handleCardClick, handleTechClick]);
 
   return (
     <div className="skills-section">
       <h2 className="skills-title">Programming Languages</h2>
       <div className="skills-container">
-        {skills.map((skill) => (
-          <div 
-            key={skill.id} 
-            className={`skill-card ${flippedCard === skill.id ? 'flipped' : ''}`}
-            onClick={() => handleCardClick(skill.id)}
-            style={{ cursor: flippedCard === skill.id ? 'pointer' : 'default' }}
-          >
-            <div className="skill-card-front">
-              <div className="skill-header">
-                <h3>{skill.name}</h3>
-                <p className="skill-description">{skill.description}</p>
-              </div>
-              <div className="tech-stack">
-                {skill.technologies.map((tech, index) => (
-                  <div 
-                    key={index} 
-                    className="tech-tag-container"
-                    onClick={(e) => handleTechClick(e, skill.id, tech)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <span 
-                      className="tech-tag"
-                      style={{ backgroundColor: tech.color }}
-                    >
-                      {tech.name}
-                    </span>
-                    <div className="tech-tooltip">
-                      <span className="tech-year">Learned in {tech.year}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="skill-card-back">
-              {selectedTech && flippedCard === skill.id && (
-                <>
-                  <h4>{selectedTech.name}</h4>
-                  <p>{selectedTech.description}</p>
-                  <div className="back-to-front">
-                    Tap to flip back
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
+        {skillCards}
       </div>
     </div>
   );
 };
 
-export default Skills; 
+export default React.memo(Skills); 

@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import ContentWrapper from '../components/ContentWrapper';
-import ProjectList from '../components/ProjectList';
-import GearPC from '../components/Gear_PC';
-import GearAudio from '../components/Gear_Audio';
-import GearPeripherals from '../components/Gear_Peripherals';
 import '../css/Projects.css';
+
+// Lazy load components
+const ProjectList = lazy(() => import('../components/ProjectList'));
+const GearPC = lazy(() => import('../components/Gear_PC'));
+const GearAudio = lazy(() => import('../components/Gear_Audio'));
+const GearPeripherals = lazy(() => import('../components/Gear_Peripherals'));
 
 const Projects = () => {
   return (
@@ -15,15 +17,23 @@ const Projects = () => {
           <div className="projects-blurb">
             Some of the projects I've been working on recently.
           </div>
-          <ProjectList />
+          <Suspense fallback={<div className="loading">Loading projects...</div>}>
+            <ProjectList />
+          </Suspense>
           <h2 className="gear-title">My Gear</h2>
           <div className="gear-blurb">
             What stuff I use day to day.
           </div>
           <div className="gear-section">
-            <GearPC />
-            <GearAudio />
-            <GearPeripherals />
+            <Suspense fallback={<div className="loading">Loading PC specs...</div>}>
+              <GearPC />
+            </Suspense>
+            <Suspense fallback={<div className="loading">Loading audio gear...</div>}>
+              <GearAudio />
+            </Suspense>
+            <Suspense fallback={<div className="loading">Loading peripherals...</div>}>
+              <GearPeripherals />
+            </Suspense>
           </div>
         </div>
       </div>
@@ -31,4 +41,4 @@ const Projects = () => {
   );
 };
 
-export default Projects;
+export default React.memo(Projects);
