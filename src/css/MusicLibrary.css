@@ -311,11 +311,12 @@ body.dark-mode .recent-tracks-list-section li p:last-child {
   cursor: pointer;
   font-weight: bold;
   margin-top: 8px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .play-btn:hover {
   background-color: #18a046;
+  transform: scale(1.05)
 }
 
 .play-btn.pause {
@@ -324,6 +325,7 @@ body.dark-mode .recent-tracks-list-section li p:last-child {
 
 .play-btn.pause:hover {
   background-color: #e04848;
+  transform: scale(1.05)
 }
 
 .play-btn-small {
@@ -357,6 +359,7 @@ body.dark-mode .recent-tracks-list-section li p:last-child {
 
 .play-btn-small:hover {
   background-color: #18a046;
+  transform: scale(1.05);
 }
 
 .play-btn-small.pause {
@@ -365,6 +368,7 @@ body.dark-mode .recent-tracks-list-section li p:last-child {
 
 .play-btn-small.pause:hover {
   background-color: #e04848;
+  transform: scale(1.05);
 }
 
 /* Now Playing Bar */
