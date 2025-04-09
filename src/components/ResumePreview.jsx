@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import resumePdf from '../assets/SWE_TrevorSeestedt_Resume.pdf';
 import resumePreviewImg from '../assets/SWE_TrevorSeestedt_Resume.png';
 import '../css/ResumePreview.css';
@@ -6,6 +6,7 @@ import '../css/ResumePreview.css';
 const ResumePreview = () => {
   // Public path to the resume
   const publicResumeUrl = '/assets/SWE_TrevorSeestedt_Resume.pdf';
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const handleDownload = () => {
     // Create an anchor element and trigger download
@@ -22,6 +23,10 @@ const ResumePreview = () => {
     window.open(resumePdf, '_blank');
   };
 
+  const handleImageLoad = (e) => {
+    setImgLoaded(true);
+  };
+
   return (
     <div className="resume-section">
       <h2 className="resume-title">My Resume</h2>
@@ -33,6 +38,11 @@ const ResumePreview = () => {
                 src={resumePreviewImg} 
                 alt="Resume preview" 
                 className="resume-preview-img"
+                onLoad={handleImageLoad}
+                style={{ 
+                  opacity: imgLoaded ? 1 : 0, 
+                  transition: 'opacity 0.3s ease'
+                }}
               />
               <div className="preview-overlay">
                 <span>Click to view</span>
