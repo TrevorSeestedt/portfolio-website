@@ -18,7 +18,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 // CORS Configuration
 const corsOptions = {
   origin: isProduction 
-    ? ['https://trevorseestedt.me'] // Your production domain
+    ? ['https://www.trevorseestedt.me'] // Your production domain
     : ['http://localhost:5173', 'http://127.0.0.1:5173'], // Vite's default dev ports
   methods: ['GET', 'POST'],
   credentials: true,
@@ -212,7 +212,7 @@ app.get('/callback', async (req, res) => {
 
     // Determine redirect URL based on environment
     const frontendUrl = isProduction 
-      ? 'https://trevorseestedt.me' 
+      ? 'https://www.trevorseestedt.me' 
       : 'http://localhost:5173';
     
     // Redirect back to the frontend
