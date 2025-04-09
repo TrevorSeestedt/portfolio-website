@@ -7,8 +7,21 @@ const rateLimit = require('express-rate-limit'); // Import rate limiter
 const app = express();
 const port = process.env.PORT || 5001; // Use 5001 as default if PORT not in .env
 
+// Determine environment
+const isProduction = process.env.NODE_ENV === 'production';
+
+// CORS Configuration
+const corsOptions = {
+  origin: isProduction 
+    ? ['https://yourproductiondomain.com'] // Replace with your actual production domain
+    : ['http://localhost:5173', 'http://127.0.0.1:5173'], // Vite's default dev ports
+  methods: ['GET', 'POST'],
+  credentials: true,
+  optionsSuccessStatus: 204
+};
+
 // === Middleware ===
-app.use(cors()); // Allow requests from your frontend origin
+app.use(cors(corsOptions)); // Apply CORS with proper configuration
 app.use(express.json()); // To parse JSON bodies
 
 // Rate Limiting Middleware (apply to API routes)

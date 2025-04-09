@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from '
 import '../css/MusicLibrary.css';
 import playButton from '../assets/play-buttton.png';
 import pauseButton from '../assets/pause.png';
-
-const BACKEND_URL = 'http://localhost:5001'; // Your backend server URL
+import config from '../config';
 
 // Memoize track item component to prevent unnecessary re-renders
 const TrackItem = memo(({ track, isPlaying, currentlyPlaying, onPlay }) => {
@@ -65,7 +64,7 @@ function MusicLibrary() {
   useEffect(() => {
     const getAccessToken = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/token`);
+        const response = await fetch(`${config.apiUrl}${config.endpoints.token}`);
         if (response.ok) {
           const data = await response.json();
           setAccessToken(data.accessToken);
@@ -173,7 +172,7 @@ function MusicLibrary() {
       setLoadingAlbums(true);
       setErrorAlbums(null);
       try {
-        const response = await fetch(`${BACKEND_URL}/api/albums`);
+        const response = await fetch(`${config.apiUrl}${config.endpoints.albums}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -200,7 +199,7 @@ function MusicLibrary() {
         }
         try {
             // We'll fetch 5 tracks for both the Now Playing and Recently Played sections
-            const response = await fetch(`${BACKEND_URL}/api/recent-tracks?limit=5`);
+            const response = await fetch(`${config.apiUrl}${config.endpoints.recentTracks}?limit=5`);
             if (!response.ok) {
                  if (response.status === 401) {
                     const errorData = await response.json();
@@ -521,7 +520,7 @@ function MusicLibrary() {
 
   const handleLoginClick = useCallback(() => {
     // Opens the backend login route in a new tab/window
-    window.open(`${BACKEND_URL}/login`, '_blank');
+    window.open(`${config.apiUrl}${config.endpoints.login}`, '_blank');
     // Optionally, you could add logic here to poll the backend
     // or provide a button to manually refresh after login.
   }, []);
