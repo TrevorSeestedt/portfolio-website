@@ -4,7 +4,7 @@ import '../css/Navbar.css';
 import lightIcon from '../assets/sun.png'
 import darkIcon from '../assets/moon.png'
 
-const NavBar = () => {
+const Navbar = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
 
@@ -42,4 +42,4 @@ const NavBar = () => {
   );
 };
 
-export default NavBar;
+export default Navbar;

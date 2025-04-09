@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, createContext, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import NavBar from './components/NavBar';
+import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import './css/global.css';
 import './css/App.css';
@@ -39,7 +39,7 @@ function App() {
     <AppContext.Provider value={contextValue}>
       <Router>
         <div className={`app ${appTheme}`}>
-          <NavBar />
+          <Navbar />
           <main className="main-content">
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
