@@ -223,54 +223,48 @@ function MusicLibrary() {
     const fetchRecentTracks = async () => {
         setLoadingRecentTracks(true);
         setErrorRecentTracks(null);
-        if (needsLogin) {
-            setErrorRecentTracks('Spotify authentication required.');
-            setLoadingRecentTracks(false);
-            return;
-        }
+        
         try {
-            // We'll fetch 5 tracks for both the Now Playing and Recently Played sections
+            // Fetch tracks from backend (which now uses your stored token)
             const response = await fetch(`${config.apiUrl}${config.endpoints.recentTracks}?limit=5`);
+            
             if (!response.ok) {
-                 if (response.status === 401) {
-                    const errorData = await response.json();
-                    if (errorData.needsLogin) {
-                      setNeedsLogin(true);
-                      setErrorRecentTracks('Spotify authentication required.');
-                      setLoadingRecentTracks(false);
-                      return;
-                    }
-                  }
-                throw new Error(`HTTP error! status: ${response.status}`);
+                // Handle error based on status code
+                const errorText = await response.text();
+                let errorMessage;
+                try {
+                    const errorData = JSON.parse(errorText);
+                    errorMessage = errorData.message || `Error: ${response.status}`;
+                } catch (e) {
+                    errorMessage = `Error: ${response.status}`;
+                }
+                throw new Error(errorMessage);
             }
+            
             const data = await response.json();
             // Make sure data is an array of tracks
             const trackArray = Array.isArray(data) ? data : [data].filter(Boolean);
             
             if (trackArray.length > 0) {
-              // Set the first track as the most recent one for Now Playing
-              setMostRecentTrack(trackArray[0]);
-              // Keep all tracks for the list display
-              setRecentTracks(trackArray);
+                // Set the first track as the most recent one for Now Playing
+                setMostRecentTrack(trackArray[0]);
+                // Keep all tracks for the list display
+                setRecentTracks(trackArray);
             } else {
-              setMostRecentTrack(null);
-              setRecentTracks([]);
+                setMostRecentTrack(null);
+                setRecentTracks([]);
             }
         } catch (error) {
             console.error("Error fetching recent tracks:", error);
-             if (!needsLogin) {
-                 setErrorRecentTracks(`Failed to load recent tracks: ${error.message}`);
-             }
+            setErrorRecentTracks(error.message);
         } finally {
-             if (!needsLogin) {
-                 setLoadingRecentTracks(false);
-             }
+            setLoadingRecentTracks(false);
         }
     };
 
     fetchAlbums();
     fetchRecentTracks();
-  }, [needsLogin]);
+  }, []);
 
   // Memoize filtered tracks to prevent unnecessary calculations
   const filteredRecentTracks = useMemo(() => {
@@ -590,12 +584,9 @@ function MusicLibrary() {
         <div className="recently-played-section">
           <h2>Now Playing</h2>
           {loadingRecentTracks && <p>Loading last track...</p>}
-          {errorRecentTracks && needsLogin && (
-            <div className="login-required-message">
-              <p>Spotify login required to view your recently played tracks</p>
-              <button className="spotify-login-btn" onClick={handleLoginClick}>
-                Connect to Spotify
-              </button>
+          {errorRecentTracks && (
+            <div className="error-message">
+              <p>Unable to load music data: {errorRecentTracks}</p>
             </div>
           )}
           {!loadingRecentTracks && !errorRecentTracks && mostRecentTrack && (
@@ -655,13 +646,7 @@ function MusicLibrary() {
           <h2>Recently Played</h2>
           <div className="recent-tracks-list-content">
             {loadingRecentTracks && <p>Loading recent tracks...</p>}
-            {/* Show login button here too if needed */}
-            {errorRecentTracks && !needsLogin && <p className="error-message">{errorRecentTracks}</p>}
-            {errorRecentTracks && needsLogin && (
-               <div className="error-message">
-                 <p>{errorRecentTracks}</p>
-               </div>
-             )}
+            {errorRecentTracks && <p className="error-message">{errorRecentTracks}</p>}
             {!loadingRecentTracks && !errorRecentTracks && filteredRecentTracks.length > 0 && (
               <ul>
                 {filteredRecentTracks.map((track) => (

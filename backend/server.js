@@ -3,9 +3,14 @@ const express = require('express');
 const cors = require('cors');
 const SpotifyWebApi = require('spotify-web-api-node');
 const rateLimit = require('express-rate-limit'); // Import rate limiter
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 5001; // Use 5001 as default if PORT not in .env
+
+// File to store YOUR Spotify refresh token
+const OWNER_TOKEN_FILE = path.join(__dirname, 'owner_token.json');
 
 // Determine environment
 const isProduction = process.env.NODE_ENV === 'production';
@@ -38,6 +43,17 @@ app.use('/api/', apiLimiter); // Apply the rate limiting middleware to API route
 let userAccessToken = null;
 let userRefreshToken = null;
 let tokenExpiresAt = null;
+
+// On server start, try to load your token
+try {
+  if (fs.existsSync(OWNER_TOKEN_FILE)) {
+    const tokenData = JSON.parse(fs.readFileSync(OWNER_TOKEN_FILE));
+    userRefreshToken = tokenData.refreshToken;
+    console.log('Owner Spotify token loaded successfully');
+  }
+} catch (error) {
+  console.error('Error loading owner token:', error);
+}
 
 const cache = {
   albums: null,
@@ -163,14 +179,11 @@ app.get('/callback', async (req, res) => {
   if (error) {
     console.error('Callback Error:', error);
     return res.send(`Callback Error: ${error}`);
-    // Potentially redirect to an error page on the frontend
   }
 
   if (!code) {
     return res.send('Authorization code missing.');
   }
-
-  // Optionally verify the state here if you used one in /login
 
   console.log('Received authorization code. Exchanging for tokens...');
   try {
@@ -184,8 +197,13 @@ app.get('/callback', async (req, res) => {
 
     console.log('Successfully retrieved user tokens.');
     console.log('Access Token Expires At:', new Date(tokenExpiresAt).toLocaleString());
-    // Don't log refresh token in production!
-    // console.log('Refresh Token:', userRefreshToken);
+    
+    // Save YOUR token permanently
+    fs.writeFileSync(OWNER_TOKEN_FILE, JSON.stringify({
+      refreshToken: userRefreshToken,
+      savedAt: new Date().toISOString()
+    }));
+    console.log('Your Spotify refresh token has been saved!');
 
     // Clear caches that depend on user token
     clearRpCache();
@@ -408,19 +426,19 @@ app.get('/api/recent-tracks', async (req, res) => {
   const now = Date.now();
   const limit = parseInt(req.query.limit, 10) || 5; // Default to 5, ensure integer
 
-  // 1. Check if user authentication is required and valid
-  const hasValidToken = await ensureValidUserToken();
-  if (!hasValidToken) {
-    console.warn('User authentication required for /api/recent-tracks');
-    // Signal to frontend that login is needed
-    return res.status(401).json({ needsLogin: true, message: 'Spotify user authentication required.' });
+  // Always try to refresh using your stored token
+  await ensureValidUserToken();
+  
+  // If we still don't have a valid token after trying to refresh
+  if (!userAccessToken) {
+    console.warn('No valid Spotify token available. Please authenticate once as the owner.');
+    return res.status(401).json({ message: 'Backend needs Spotify authentication setup.' });
   }
 
   // 2. Check cache
   if (cache.recentTracks && cache.recentTracksLastFetched && (now - cache.recentTracksLastFetched < cache.recentTracksCacheDurationMs)) {
     console.log(`Serving recent tracks list (limit ${limit}) from cache.`);
     // Return the cached list (might contain more than requested limit, frontend will handle)
-    // Or slice here: return res.json(cache.recentTracks.slice(0, limit));
     return res.json(cache.recentTracks);
   }
 
@@ -461,15 +479,33 @@ app.get('/api/recent-tracks', async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching recent tracks from Spotify:', error.message || error);
-    // Handle specific errors like rate limiting if needed
-    if (error.statusCode === 401) { // Token might have been revoked externally
-        clearRpCache();
-        clearRecentTracksCache();
-        userAccessToken = null;
-        userRefreshToken = null;
-        tokenExpiresAt = null;
-        return res.status(401).json({ needsLogin: true, message: 'Spotify token invalid or expired. Please re-authenticate.' });
+    // If token is invalid, try loading from file again
+    if (error.statusCode === 401) {
+      try {
+        if (fs.existsSync(OWNER_TOKEN_FILE)) {
+          const tokenData = JSON.parse(fs.readFileSync(OWNER_TOKEN_FILE));
+          userRefreshToken = tokenData.refreshToken;
+          console.log('Reloaded owner token after error');
+          
+          // Try refreshing again
+          const refreshed = await ensureValidUserToken();
+          if (refreshed) {
+            return res.status(202).json({ message: 'Token refreshed, please try again' });
+          }
+        }
+      } catch (fileError) {
+        console.error('Error reloading token file:', fileError);
+      }
+      
+      // Clear everything if we still have issues
+      clearRpCache();
+      clearRecentTracksCache();
+      userAccessToken = null;
+      userRefreshToken = null;
+      tokenExpiresAt = null;
+      return res.status(401).json({ message: 'Spotify token invalid. The site owner needs to re-authenticate.' });
     }
+    
     res.status(error.statusCode || 500).json({ message: `Failed to fetch recent tracks: ${error.message}` });
   }
 });
