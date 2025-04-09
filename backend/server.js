@@ -13,7 +13,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 // CORS Configuration
 const corsOptions = {
   origin: isProduction 
-    ? ['https://yourproductiondomain.com'] // Replace with your actual production domain
+    ? ['https://trevorseestedt.me'] // Your production domain
     : ['http://localhost:5173', 'http://127.0.0.1:5173'], // Vite's default dev ports
   methods: ['GET', 'POST'],
   credentials: true,
@@ -192,11 +192,13 @@ app.get('/callback', async (req, res) => {
     clearRecentTracksCache();
     console.log('Recently Played and Recent Tracks caches cleared after successful auth.');
 
-    // Redirect back to the frontend (or show a success message)
-    // In production, redirect to your frontend's main page or wherever appropriate
-    res.send('Authentication successful! You can close this window. Backend is ready.');
-    // Example redirect (adjust for your frontend structure):
-    // res.redirect('http://localhost:3000/'); // Assuming frontend runs on 3000
+    // Determine redirect URL based on environment
+    const frontendUrl = isProduction 
+      ? 'https://trevorseestedt.me' 
+      : 'http://localhost:5173';
+    
+    // Redirect back to the frontend
+    return res.redirect(`${frontendUrl}/music?auth=success`);
 
   } catch (authError) {
     console.error('Error getting tokens:', authError.message || authError);

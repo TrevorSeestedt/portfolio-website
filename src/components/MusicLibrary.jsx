@@ -3,6 +3,7 @@ import '../css/MusicLibrary.css';
 import playButton from '../assets/play-buttton.png';
 import pauseButton from '../assets/pause.png';
 import config from '../config';
+import { useLocation } from 'react-router-dom';
 
 // Memoize track item component to prevent unnecessary re-renders
 const TrackItem = memo(({ track, isPlaying, currentlyPlaying, onPlay }) => {
@@ -32,6 +33,7 @@ const TrackItem = memo(({ track, isPlaying, currentlyPlaying, onPlay }) => {
 });
 
 function MusicLibrary() {
+  const location = useLocation();
   const [recentTracks, setRecentTracks] = useState([]); // State for all recent tracks
   const [mostRecentTrack, setMostRecentTrack] = useState(null); // State for the most recent track
   const [albums, setAlbums] = useState([]);
@@ -60,25 +62,34 @@ function MusicLibrary() {
   const [albumColor, setAlbumColor] = useState(null);
   const canvasRef = useRef(null);
 
-  // Fetch Spotify access token on component mount
+  // Check URL for authentication success
   useEffect(() => {
-    const getAccessToken = async () => {
-      try {
-        const response = await fetch(`${config.apiUrl}${config.endpoints.token}`);
-        if (response.ok) {
-          const data = await response.json();
-          setAccessToken(data.accessToken);
-        } else {
-          setNeedsLogin(true);
-          console.warn('Failed to get access token. User may need to log in.');
+    const params = new URLSearchParams(location.search);
+    const authSuccess = params.get('auth') === 'success';
+    
+    if (authSuccess) {
+      // User just completed authentication, refresh data
+      setNeedsLogin(false);
+      // Fetch data after successful authentication
+      const fetchDataAfterAuth = async () => {
+        try {
+          const response = await fetch(`${config.apiUrl}${config.endpoints.token}`);
+          if (response.ok) {
+            const data = await response.json();
+            setAccessToken(data.accessToken);
+            // Additional logic to fetch tracks/albums will be triggered by the token change
+          }
+        } catch (error) {
+          console.error('Error fetching token after auth:', error);
         }
-      } catch (error) {
-        console.error('Error fetching access token:', error);
-      }
-    };
-
-    getAccessToken();
-  }, []);
+      };
+      
+      fetchDataAfterAuth();
+      
+      // Remove the query parameter from URL without reloading
+      window.history.replaceState({}, '', location.pathname);
+    }
+  }, [location]);
 
   // Initialize Spotify Web Playback SDK when access token is available
   useEffect(() => {
@@ -166,6 +177,26 @@ function MusicLibrary() {
       }
     };
   }, [accessToken]);
+
+  // Fetch Spotify access token on component mount
+  useEffect(() => {
+    const getAccessToken = async () => {
+      try {
+        const response = await fetch(`${config.apiUrl}${config.endpoints.token}`);
+        if (response.ok) {
+          const data = await response.json();
+          setAccessToken(data.accessToken);
+        } else {
+          setNeedsLogin(true);
+          console.warn('Failed to get access token. User may need to log in.');
+        }
+      } catch (error) {
+        console.error('Error fetching access token:', error);
+      }
+    };
+    
+    getAccessToken();
+  }, []);
 
   useEffect(() => {
     const fetchAlbums = async () => {
@@ -519,10 +550,8 @@ function MusicLibrary() {
   }, [handleWheel]); // Only depends on handleWheel callback
 
   const handleLoginClick = useCallback(() => {
-    // Opens the backend login route in a new tab/window
-    window.open(`${config.apiUrl}${config.endpoints.login}`, '_blank');
-    // Optionally, you could add logic here to poll the backend
-    // or provide a button to manually refresh after login.
+    // Open login in the same window for a seamless auth flow
+    window.location.href = `${config.apiUrl}${config.endpoints.login}`;
   }, []);
 
   // --- Click Handler for Album Items ---
@@ -561,14 +590,12 @@ function MusicLibrary() {
         <div className="recently-played-section">
           <h2>Now Playing</h2>
           {loadingRecentTracks && <p>Loading last track...</p>}
-          {errorRecentTracks && (
-            <div className="error-message">
-              <p>{errorRecentTracks}</p>
-              {needsLogin && (
-                <button onClick={handleLoginClick} className="login-button">
-                  Connect to Spotify
-                </button>
-              )}
+          {errorRecentTracks && needsLogin && (
+            <div className="login-required-message">
+              <p>Spotify login required to view your recently played tracks</p>
+              <button className="spotify-login-btn" onClick={handleLoginClick}>
+                Connect to Spotify
+              </button>
             </div>
           )}
           {!loadingRecentTracks && !errorRecentTracks && mostRecentTrack && (
